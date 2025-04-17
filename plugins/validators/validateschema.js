@@ -1,3 +1,64 @@
+import { property as c, LitElement as N } from "lit-element";
+import { NodePart as E, AttributePart as I, directive as P } from "lit-html";
+const g = 1e3 * 60, b = "langChanged";
+function L(e, t, n) {
+  return Object.entries(p(t || {})).reduce((s, [a, i]) => s.replace(new RegExp(`{{[  ]*${a}[  ]*}}`, "gm"), String(p(i))), e);
+}
+function O(e, t) {
+  const n = e.split(".");
+  let s = t.strings;
+  for (; s != null && n.length > 0; )
+    s = s[n.shift()];
+  return s != null ? s.toString() : null;
+}
+function p(e) {
+  return typeof e == "function" ? e() : e;
+}
+const A = () => ({
+  loader: () => Promise.resolve({}),
+  empty: (e) => `[${e}]`,
+  lookup: O,
+  interpolate: L,
+  translationCache: {}
+});
+let D = A();
+function R(e, t) {
+  const n = (s) => e(s.detail);
+  return window.addEventListener(b, n, t), () => window.removeEventListener(b, n);
+}
+function m(e, t, n = D) {
+  let s = n.translationCache[e] || (n.translationCache[e] = n.lookup(e, n) || n.empty(e, n));
+  return t = t != null ? p(t) : null, t != null ? n.interpolate(s, t, n) : s;
+}
+function v(e) {
+  return e instanceof E ? e.startNode.isConnected : e instanceof I ? e.committer.element.isConnected : e.element.isConnected;
+}
+function G(e) {
+  for (const [t] of e)
+    v(t) || e.delete(t);
+}
+function F(e) {
+  "requestIdleCallback" in window ? window.requestIdleCallback(e) : setTimeout(e);
+}
+function M(e, t) {
+  setInterval(() => F(() => G(e)), t);
+}
+const d = /* @__PURE__ */ new Map();
+function V() {
+  R((e) => {
+    for (const [t, n] of d)
+      v(t) && C(t, n, e);
+  });
+}
+V();
+M(d, g);
+function C(e, t, n) {
+  const s = t(n);
+  e.value !== s && (e.setValue(s), e.commit());
+}
+P((e) => (t) => {
+  d.set(t, e), C(t, e);
+});
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -11,12 +72,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-const K = typeof window < "u" && window.customElements != null && window.customElements.polyfillWrapFlushCallback !== void 0, U = (n, e, t = null) => {
-  for (; e !== t; ) {
-    const s = e.nextSibling;
-    n.removeChild(e), e = s;
-  }
-};
+`${String(Math.random()).slice(2)}`;
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -30,70 +86,7 @@ const K = typeof window < "u" && window.customElements != null && window.customE
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-const f = `{{lit-${String(Math.random()).slice(2)}}}`, ie = `<!--${f}-->`, Y = new RegExp(`${f}|${ie}`), S = "$lit$";
-class xe {
-  constructor(e, t) {
-    this.parts = [], this.element = t;
-    const s = [], a = [], i = document.createTreeWalker(t.content, 133, null, !1);
-    let u = 0, x = -1, o = 0;
-    const { strings: l, values: { length: r } } = e;
-    for (; o < r; ) {
-      const m = i.nextNode();
-      if (m === null) {
-        i.currentNode = a.pop();
-        continue;
-      }
-      if (x++, m.nodeType === 1) {
-        if (m.hasAttributes()) {
-          const p = m.attributes, { length: g } = p;
-          let b = 0;
-          for (let c = 0; c < g; c++)
-            X(p[c].name, S) && b++;
-          for (; b-- > 0; ) {
-            const c = l[o], q = G.exec(c)[2], h = q.toLowerCase() + S, T = m.getAttribute(h);
-            m.removeAttribute(h);
-            const d = T.split(Y);
-            this.parts.push({ type: "attribute", index: x, name: q, strings: d }), o += d.length - 1;
-          }
-        }
-        m.tagName === "TEMPLATE" && (a.push(m), i.currentNode = m.content);
-      } else if (m.nodeType === 3) {
-        const p = m.data;
-        if (p.indexOf(f) >= 0) {
-          const g = m.parentNode, b = p.split(Y), c = b.length - 1;
-          for (let q = 0; q < c; q++) {
-            let h, T = b[q];
-            if (T === "")
-              h = y();
-            else {
-              const d = G.exec(T);
-              d !== null && X(d[2], S) && (T = T.slice(0, d.index) + d[1] + d[2].slice(0, -S.length) + d[3]), h = document.createTextNode(T);
-            }
-            g.insertBefore(h, m), this.parts.push({ type: "node", index: ++x });
-          }
-          b[c] === "" ? (g.insertBefore(y(), m), s.push(m)) : m.data = b[c], o += c;
-        }
-      } else if (m.nodeType === 8)
-        if (m.data === f) {
-          const p = m.parentNode;
-          (m.previousSibling === null || x === u) && (x++, p.insertBefore(y(), m)), u = x, this.parts.push({ type: "node", index: x }), m.nextSibling === null ? m.data = "" : (s.push(m), x--), o++;
-        } else {
-          let p = -1;
-          for (; (p = m.data.indexOf(f, p + 1)) !== -1; )
-            this.parts.push({ type: "node", index: -1 }), o++;
-        }
-    }
-    for (const m of s)
-      m.parentNode.removeChild(m);
-  }
-}
-const X = (n, e) => {
-  const t = n.length - e.length;
-  return t >= 0 && n.slice(t) === e;
-}, ue = (n) => n.index !== -1, y = () => document.createComment(""), G = (
-  // eslint-disable-next-line no-control-regex
-  /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/
-);
+window.trustedTypes && trustedTypes.createPolicy("lit-html", { createHTML: (e) => e });
 /**
  * @license
  * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -107,285 +100,15 @@ const X = (n, e) => {
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-const z = 133;
-function oe(n, e) {
-  const { element: { content: t }, parts: s } = n, a = document.createTreeWalker(t, z, null, !1);
-  let i = N(s), u = s[i], x = -1, o = 0;
-  const l = [];
-  let r = null;
-  for (; a.nextNode(); ) {
-    x++;
-    const m = a.currentNode;
-    for (m.previousSibling === r && (r = null), e.has(m) && (l.push(m), r === null && (r = m)), r !== null && o++; u !== void 0 && u.index === x; )
-      u.index = r !== null ? -1 : u.index - o, i = N(s, i), u = s[i];
-  }
-  l.forEach((m) => m.parentNode.removeChild(m));
-}
-const Te = (n) => {
-  let e = n.nodeType === 11 ? 0 : 1;
-  const t = document.createTreeWalker(n, z, null, !1);
-  for (; t.nextNode(); )
-    e++;
-  return e;
-}, N = (n, e = -1) => {
-  for (let t = e + 1; t < n.length; t++) {
-    const s = n[t];
-    if (ue(s))
-      return t;
-  }
-  return -1;
-};
-function qe(n, e, t = null) {
-  const { element: { content: s }, parts: a } = n;
-  if (t == null) {
-    s.appendChild(e);
-    return;
-  }
-  const i = document.createTreeWalker(s, z, null, !1);
-  let u = N(a), x = 0, o = -1;
-  for (; i.nextNode(); )
-    for (o++, i.currentNode === t && (x = Te(e), t.parentNode.insertBefore(e, t)); u !== -1 && a[u].index === o; ) {
-      if (x > 0) {
-        for (; u !== -1; )
-          a[u].index += x, u = N(a, u);
-        return;
-      }
-      u = N(a, u);
-    }
-}
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const he = /* @__PURE__ */ new WeakMap(), w = (n) => typeof n == "function" && he.has(n);
-/**
- * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const E = {}, Q = {};
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-class M {
-  constructor(e, t, s) {
-    this.__parts = [], this.template = e, this.processor = t, this.options = s;
-  }
-  update(e) {
-    let t = 0;
-    for (const s of this.__parts)
-      s !== void 0 && s.setValue(e[t]), t++;
-    for (const s of this.__parts)
-      s !== void 0 && s.commit();
-  }
-  _clone() {
-    const e = K ? this.template.element.content.cloneNode(!0) : document.importNode(this.template.element.content, !0), t = [], s = this.template.parts, a = document.createTreeWalker(e, 133, null, !1);
-    let i = 0, u = 0, x, o = a.nextNode();
-    for (; i < s.length; ) {
-      if (x = s[i], !ue(x)) {
-        this.__parts.push(void 0), i++;
-        continue;
-      }
-      for (; u < x.index; )
-        u++, o.nodeName === "TEMPLATE" && (t.push(o), a.currentNode = o.content), (o = a.nextNode()) === null && (a.currentNode = t.pop(), o = a.nextNode());
-      if (x.type === "node") {
-        const l = this.processor.handleTextExpression(this.options);
-        l.insertAfterNode(o.previousSibling), this.__parts.push(l);
-      } else
-        this.__parts.push(...this.processor.handleAttributeExpressions(o, x.name, x.strings, this.options));
-      i++;
-    }
-    return K && (document.adoptNode(e), customElements.upgrade(e)), e;
-  }
-}
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const j = window.trustedTypes && trustedTypes.createPolicy("lit-html", { createHTML: (n) => n }), ve = ` ${f} `;
-class Ce {
-  constructor(e, t, s, a) {
-    this.strings = e, this.values = t, this.type = s, this.processor = a;
-  }
-  /**
-   * Returns a string of HTML used to create a `<template>` element.
-   */
-  getHTML() {
-    const e = this.strings.length - 1;
-    let t = "", s = !1;
-    for (let a = 0; a < e; a++) {
-      const i = this.strings[a], u = i.lastIndexOf("<!--");
-      s = (u > -1 || s) && i.indexOf("-->", u + 1) === -1;
-      const x = G.exec(i);
-      x === null ? t += i + (s ? ve : ie) : t += i.substr(0, x.index) + x[1] + x[2] + S + x[3] + f;
-    }
-    return t += this.strings[e], t;
-  }
-  getTemplateElement() {
-    const e = document.createElement("template");
-    let t = this.getHTML();
-    return j !== void 0 && (t = j.createHTML(t)), e.innerHTML = t, e;
-  }
-}
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const me = (n) => n === null || !(typeof n == "object" || typeof n == "function"), Se = (n) => Array.isArray(n) || // eslint-disable-next-line @typescript-eslint/no-explicit-any
-!!(n && n[Symbol.iterator]);
-class Ne {
-  constructor(e) {
-    this.value = void 0, this.committer = e;
-  }
-  setValue(e) {
-    e !== E && (!me(e) || e !== this.value) && (this.value = e, w(e) || (this.committer.dirty = !0));
-  }
-  commit() {
-    for (; w(this.value); ) {
-      const e = this.value;
-      this.value = E, e(this);
-    }
-    this.value !== E && this.committer.commit();
-  }
-}
-class L {
-  constructor(e) {
-    this.value = void 0, this.__pendingValue = void 0, this.options = e;
-  }
-  /**
-   * Appends this part into a container.
-   *
-   * This part must be empty, as its contents are not automatically moved.
-   */
-  appendInto(e) {
-    this.startNode = e.appendChild(y()), this.endNode = e.appendChild(y());
-  }
-  /**
-   * Inserts this part after the `ref` node (between `ref` and `ref`'s next
-   * sibling). Both `ref` and its next sibling must be static, unchanging nodes
-   * such as those that appear in a literal section of a template.
-   *
-   * This part must be empty, as its contents are not automatically moved.
-   */
-  insertAfterNode(e) {
-    this.startNode = e, this.endNode = e.nextSibling;
-  }
-  /**
-   * Appends this part into a parent part.
-   *
-   * This part must be empty, as its contents are not automatically moved.
-   */
-  appendIntoPart(e) {
-    e.__insert(this.startNode = y()), e.__insert(this.endNode = y());
-  }
-  /**
-   * Inserts this part after the `ref` part.
-   *
-   * This part must be empty, as its contents are not automatically moved.
-   */
-  insertAfterPart(e) {
-    e.__insert(this.startNode = y()), this.endNode = e.endNode, e.endNode = this.startNode;
-  }
-  setValue(e) {
-    this.__pendingValue = e;
-  }
-  commit() {
-    if (this.startNode.parentNode === null)
-      return;
-    for (; w(this.__pendingValue); ) {
-      const t = this.__pendingValue;
-      this.__pendingValue = E, t(this);
-    }
-    const e = this.__pendingValue;
-    e !== E && (me(e) ? e !== this.value && this.__commitText(e) : e instanceof Ce ? this.__commitTemplateResult(e) : e instanceof Node ? this.__commitNode(e) : Se(e) ? this.__commitIterable(e) : e === Q ? (this.value = Q, this.clear()) : this.__commitText(e));
-  }
-  __insert(e) {
-    this.endNode.parentNode.insertBefore(e, this.endNode);
-  }
-  __commitNode(e) {
-    this.value !== e && (this.clear(), this.__insert(e), this.value = e);
-  }
-  __commitText(e) {
-    const t = this.startNode.nextSibling;
-    e = e ?? "";
-    const s = typeof e == "string" ? e : String(e);
-    t === this.endNode.previousSibling && t.nodeType === 3 ? t.data = s : this.__commitNode(document.createTextNode(s)), this.value = e;
-  }
-  __commitTemplateResult(e) {
-    const t = this.options.templateFactory(e);
-    if (this.value instanceof M && this.value.template === t)
-      this.value.update(e.values);
-    else {
-      const s = new M(t, e.processor, this.options), a = s._clone();
-      s.update(e.values), this.__commitNode(a), this.value = s;
-    }
-  }
-  __commitIterable(e) {
-    Array.isArray(this.value) || (this.value = [], this.clear());
-    const t = this.value;
-    let s = 0, a;
-    for (const i of e)
-      a = t[s], a === void 0 && (a = new L(this.options), t.push(a), s === 0 ? a.appendIntoPart(this) : a.insertAfterPart(t[s - 1])), a.setValue(i), a.commit(), s++;
-    s < t.length && (t.length = s, this.clear(a && a.endNode));
-  }
-  clear(e = this.startNode) {
-    U(this.startNode.parentNode, e.nextSibling, this.endNode);
-  }
-}
-let Ee = !1;
+let w = !1;
 (() => {
   try {
-    const n = {
+    const e = {
       get capture() {
-        return Ee = !0, !1;
+        return w = !0, !1;
       }
     };
-    window.addEventListener("test", n, n), window.removeEventListener("test", n, n);
+    window.addEventListener("test", e, e), window.removeEventListener("test", e, e);
   } catch {
   }
 })();
@@ -402,853 +125,37 @@ let Ee = !1;
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-function Ie(n) {
-  let e = I.get(n.type);
-  e === void 0 && (e = {
-    stringsArray: /* @__PURE__ */ new WeakMap(),
-    keyString: /* @__PURE__ */ new Map()
-  }, I.set(n.type, e));
-  let t = e.stringsArray.get(n.strings);
-  if (t !== void 0)
-    return t;
-  const s = n.strings.join(f);
-  return t = e.keyString.get(s), t === void 0 && (t = new xe(n, n.getTemplateElement()), e.keyString.set(s, t)), e.stringsArray.set(n.strings, t), t;
-}
-const I = /* @__PURE__ */ new Map();
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const C = /* @__PURE__ */ new WeakMap(), ge = (n, e, t) => {
-  let s = C.get(e);
-  s === void 0 && (U(e, e.firstChild), C.set(e, s = new L(Object.assign({ templateFactory: Ie }, t))), s.appendInto(e)), s.setValue(n), s.commit();
-};
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
 typeof window < "u" && (window.litHtmlVersions || (window.litHtmlVersions = [])).push("1.4.1");
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const le = (n, e) => `${n}--${e}`;
-let P = !0;
-typeof window.ShadyCSS > "u" ? P = !1 : typeof window.ShadyCSS.prepareTemplateDom > "u" && (console.warn("Incompatible ShadyCSS version detected. Please update to at least @webcomponents/webcomponentsjs@2.0.2 and @webcomponents/shadycss@1.3.1."), P = !1);
-const Pe = (n) => (e) => {
-  const t = le(e.type, n);
-  let s = I.get(t);
-  s === void 0 && (s = {
-    stringsArray: /* @__PURE__ */ new WeakMap(),
-    keyString: /* @__PURE__ */ new Map()
-  }, I.set(t, s));
-  let a = s.stringsArray.get(e.strings);
-  if (a !== void 0)
-    return a;
-  const i = e.strings.join(f);
-  if (a = s.keyString.get(i), a === void 0) {
-    const u = e.getTemplateElement();
-    P && window.ShadyCSS.prepareTemplateDom(u, n), a = new xe(e, u), s.keyString.set(i, a);
-  }
-  return s.stringsArray.set(e.strings, a), a;
-}, Le = ["html", "svg"], Oe = (n) => {
-  Le.forEach((e) => {
-    const t = I.get(le(e, n));
-    t !== void 0 && t.keyString.forEach((s) => {
-      const { element: { content: a } } = s, i = /* @__PURE__ */ new Set();
-      Array.from(a.querySelectorAll("style")).forEach((u) => {
-        i.add(u);
-      }), oe(s, i);
-    });
-  });
-}, re = /* @__PURE__ */ new Set(), Ae = (n, e, t) => {
-  re.add(n);
-  const s = t ? t.element : document.createElement("template"), a = e.querySelectorAll("style"), { length: i } = a;
-  if (i === 0) {
-    window.ShadyCSS.prepareTemplateStyles(s, n);
-    return;
-  }
-  const u = document.createElement("style");
-  for (let l = 0; l < i; l++) {
-    const r = a[l];
-    r.parentNode.removeChild(r), u.textContent += r.textContent;
-  }
-  Oe(n);
-  const x = s.content;
-  t ? qe(t, u, x.firstChild) : x.insertBefore(u, x.firstChild), window.ShadyCSS.prepareTemplateStyles(s, n);
-  const o = x.querySelector("style");
-  if (window.ShadyCSS.nativeShadow && o !== null)
-    e.insertBefore(o.cloneNode(!0), e.firstChild);
-  else if (t) {
-    x.insertBefore(u, x.firstChild);
-    const l = /* @__PURE__ */ new Set();
-    l.add(u), oe(t, l);
-  }
-}, De = (n, e, t) => {
-  if (!t || typeof t != "object" || !t.scopeName)
-    throw new Error("The `scopeName` option is required.");
-  const s = t.scopeName, a = C.has(e), i = P && e.nodeType === 11 && !!e.host, u = i && !re.has(s), x = u ? document.createDocumentFragment() : e;
-  if (ge(n, x, Object.assign({ templateFactory: Pe(s) }, t)), u) {
-    const o = C.get(x);
-    C.delete(x);
-    const l = o.value instanceof M ? o.value.template : void 0;
-    Ae(s, x, l), U(e, e.firstChild), e.appendChild(x), C.set(e, o);
-  }
-  !a && i && window.ShadyCSS.styleElement(e.host);
-};
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-var pe;
-window.JSCompiler_renameProperty = (n, e) => n;
-const V = {
-  toAttribute(n, e) {
-    switch (e) {
-      case Boolean:
-        return n ? "" : null;
-      case Object:
-      case Array:
-        return n == null ? n : JSON.stringify(n);
-    }
-    return n;
-  },
-  fromAttribute(n, e) {
-    switch (e) {
-      case Boolean:
-        return n !== null;
-      case Number:
-        return n === null ? null : Number(n);
-      case Object:
-      case Array:
-        return JSON.parse(n);
-    }
-    return n;
-  }
-}, ce = (n, e) => e !== n && (e === e || n === n), A = {
-  attribute: !0,
-  type: String,
-  converter: V,
-  reflect: !1,
-  hasChanged: ce
-}, D = 1, $ = 4, J = 8, ee = 16, _ = "finalized";
-class de extends HTMLElement {
-  constructor() {
-    super(), this.initialize();
-  }
-  /**
-   * Returns a list of attributes corresponding to the registered properties.
-   * @nocollapse
-   */
-  static get observedAttributes() {
-    this.finalize();
-    const e = [];
-    return this._classProperties.forEach((t, s) => {
-      const a = this._attributeNameForProperty(s, t);
-      a !== void 0 && (this._attributeToPropertyMap.set(a, s), e.push(a));
-    }), e;
-  }
-  /**
-   * Ensures the private `_classProperties` property metadata is created.
-   * In addition to `finalize` this is also called in `createProperty` to
-   * ensure the `@property` decorator can add property metadata.
-   */
-  /** @nocollapse */
-  static _ensureClassProperties() {
-    if (!this.hasOwnProperty(JSCompiler_renameProperty("_classProperties", this))) {
-      this._classProperties = /* @__PURE__ */ new Map();
-      const e = Object.getPrototypeOf(this)._classProperties;
-      e !== void 0 && e.forEach((t, s) => this._classProperties.set(s, t));
-    }
-  }
-  /**
-   * Creates a property accessor on the element prototype if one does not exist
-   * and stores a PropertyDeclaration for the property with the given options.
-   * The property setter calls the property's `hasChanged` property option
-   * or uses a strict identity check to determine whether or not to request
-   * an update.
-   *
-   * This method may be overridden to customize properties; however,
-   * when doing so, it's important to call `super.createProperty` to ensure
-   * the property is setup correctly. This method calls
-   * `getPropertyDescriptor` internally to get a descriptor to install.
-   * To customize what properties do when they are get or set, override
-   * `getPropertyDescriptor`. To customize the options for a property,
-   * implement `createProperty` like this:
-   *
-   * static createProperty(name, options) {
-   *   options = Object.assign(options, {myOption: true});
-   *   super.createProperty(name, options);
-   * }
-   *
-   * @nocollapse
-   */
-  static createProperty(e, t = A) {
-    if (this._ensureClassProperties(), this._classProperties.set(e, t), t.noAccessor || this.prototype.hasOwnProperty(e))
-      return;
-    const s = typeof e == "symbol" ? Symbol() : `__${e}`, a = this.getPropertyDescriptor(e, s, t);
-    a !== void 0 && Object.defineProperty(this.prototype, e, a);
-  }
-  /**
-   * Returns a property descriptor to be defined on the given named property.
-   * If no descriptor is returned, the property will not become an accessor.
-   * For example,
-   *
-   *   class MyElement extends LitElement {
-   *     static getPropertyDescriptor(name, key, options) {
-   *       const defaultDescriptor =
-   *           super.getPropertyDescriptor(name, key, options);
-   *       const setter = defaultDescriptor.set;
-   *       return {
-   *         get: defaultDescriptor.get,
-   *         set(value) {
-   *           setter.call(this, value);
-   *           // custom action.
-   *         },
-   *         configurable: true,
-   *         enumerable: true
-   *       }
-   *     }
-   *   }
-   *
-   * @nocollapse
-   */
-  static getPropertyDescriptor(e, t, s) {
-    return {
-      // tslint:disable-next-line:no-any no symbol in index
-      get() {
-        return this[t];
-      },
-      set(a) {
-        const i = this[e];
-        this[t] = a, this.requestUpdateInternal(e, i, s);
-      },
-      configurable: !0,
-      enumerable: !0
-    };
-  }
-  /**
-   * Returns the property options associated with the given property.
-   * These options are defined with a PropertyDeclaration via the `properties`
-   * object or the `@property` decorator and are registered in
-   * `createProperty(...)`.
-   *
-   * Note, this method should be considered "final" and not overridden. To
-   * customize the options for a given property, override `createProperty`.
-   *
-   * @nocollapse
-   * @final
-   */
-  static getPropertyOptions(e) {
-    return this._classProperties && this._classProperties.get(e) || A;
-  }
-  /**
-   * Creates property accessors for registered properties and ensures
-   * any superclasses are also finalized.
-   * @nocollapse
-   */
-  static finalize() {
-    const e = Object.getPrototypeOf(this);
-    if (e.hasOwnProperty(_) || e.finalize(), this[_] = !0, this._ensureClassProperties(), this._attributeToPropertyMap = /* @__PURE__ */ new Map(), this.hasOwnProperty(JSCompiler_renameProperty("properties", this))) {
-      const t = this.properties, s = [
-        ...Object.getOwnPropertyNames(t),
-        ...typeof Object.getOwnPropertySymbols == "function" ? Object.getOwnPropertySymbols(t) : []
-      ];
-      for (const a of s)
-        this.createProperty(a, t[a]);
-    }
-  }
-  /**
-   * Returns the property name for the given attribute `name`.
-   * @nocollapse
-   */
-  static _attributeNameForProperty(e, t) {
-    const s = t.attribute;
-    return s === !1 ? void 0 : typeof s == "string" ? s : typeof e == "string" ? e.toLowerCase() : void 0;
-  }
-  /**
-   * Returns true if a property should request an update.
-   * Called when a property value is set and uses the `hasChanged`
-   * option for the property if present or a strict identity check.
-   * @nocollapse
-   */
-  static _valueHasChanged(e, t, s = ce) {
-    return s(e, t);
-  }
-  /**
-   * Returns the property value for the given attribute value.
-   * Called via the `attributeChangedCallback` and uses the property's
-   * `converter` or `converter.fromAttribute` property option.
-   * @nocollapse
-   */
-  static _propertyValueFromAttribute(e, t) {
-    const s = t.type, a = t.converter || V, i = typeof a == "function" ? a : a.fromAttribute;
-    return i ? i(e, s) : e;
-  }
-  /**
-   * Returns the attribute value for the given property value. If this
-   * returns undefined, the property will *not* be reflected to an attribute.
-   * If this returns null, the attribute will be removed, otherwise the
-   * attribute will be set to the value.
-   * This uses the property's `reflect` and `type.toAttribute` property options.
-   * @nocollapse
-   */
-  static _propertyValueToAttribute(e, t) {
-    if (t.reflect === void 0)
-      return;
-    const s = t.type, a = t.converter;
-    return (a && a.toAttribute || V.toAttribute)(e, s);
-  }
-  /**
-   * Performs element initialization. By default captures any pre-set values for
-   * registered properties.
-   */
-  initialize() {
-    this._updateState = 0, this._updatePromise = new Promise((e) => this._enableUpdatingResolver = e), this._changedProperties = /* @__PURE__ */ new Map(), this._saveInstanceProperties(), this.requestUpdateInternal();
-  }
-  /**
-   * Fixes any properties set on the instance before upgrade time.
-   * Otherwise these would shadow the accessor and break these properties.
-   * The properties are stored in a Map which is played back after the
-   * constructor runs. Note, on very old versions of Safari (<=9) or Chrome
-   * (<=41), properties created for native platform properties like (`id` or
-   * `name`) may not have default values set in the element constructor. On
-   * these browsers native properties appear on instances and therefore their
-   * default value will overwrite any element default (e.g. if the element sets
-   * this.id = 'id' in the constructor, the 'id' will become '' since this is
-   * the native platform default).
-   */
-  _saveInstanceProperties() {
-    this.constructor._classProperties.forEach((e, t) => {
-      if (this.hasOwnProperty(t)) {
-        const s = this[t];
-        delete this[t], this._instanceProperties || (this._instanceProperties = /* @__PURE__ */ new Map()), this._instanceProperties.set(t, s);
-      }
-    });
-  }
-  /**
-   * Applies previously saved instance properties.
-   */
-  _applyInstanceProperties() {
-    this._instanceProperties.forEach((e, t) => this[t] = e), this._instanceProperties = void 0;
-  }
-  connectedCallback() {
-    this.enableUpdating();
-  }
-  enableUpdating() {
-    this._enableUpdatingResolver !== void 0 && (this._enableUpdatingResolver(), this._enableUpdatingResolver = void 0);
-  }
-  /**
-   * Allows for `super.disconnectedCallback()` in extensions while
-   * reserving the possibility of making non-breaking feature additions
-   * when disconnecting at some point in the future.
-   */
-  disconnectedCallback() {
-  }
-  /**
-   * Synchronizes property values when attributes change.
-   */
-  attributeChangedCallback(e, t, s) {
-    t !== s && this._attributeToProperty(e, s);
-  }
-  _propertyToAttribute(e, t, s = A) {
-    const a = this.constructor, i = a._attributeNameForProperty(e, s);
-    if (i !== void 0) {
-      const u = a._propertyValueToAttribute(t, s);
-      if (u === void 0)
-        return;
-      this._updateState = this._updateState | J, u == null ? this.removeAttribute(i) : this.setAttribute(i, u), this._updateState = this._updateState & -9;
-    }
-  }
-  _attributeToProperty(e, t) {
-    if (this._updateState & J)
-      return;
-    const s = this.constructor, a = s._attributeToPropertyMap.get(e);
-    if (a !== void 0) {
-      const i = s.getPropertyOptions(a);
-      this._updateState = this._updateState | ee, this[a] = // tslint:disable-next-line:no-any
-      s._propertyValueFromAttribute(t, i), this._updateState = this._updateState & -17;
-    }
-  }
-  /**
-   * This protected version of `requestUpdate` does not access or return the
-   * `updateComplete` promise. This promise can be overridden and is therefore
-   * not free to access.
-   */
-  requestUpdateInternal(e, t, s) {
-    let a = !0;
-    if (e !== void 0) {
-      const i = this.constructor;
-      s = s || i.getPropertyOptions(e), i._valueHasChanged(this[e], t, s.hasChanged) ? (this._changedProperties.has(e) || this._changedProperties.set(e, t), s.reflect === !0 && !(this._updateState & ee) && (this._reflectingProperties === void 0 && (this._reflectingProperties = /* @__PURE__ */ new Map()), this._reflectingProperties.set(e, s))) : a = !1;
-    }
-    !this._hasRequestedUpdate && a && (this._updatePromise = this._enqueueUpdate());
-  }
-  /**
-   * Requests an update which is processed asynchronously. This should
-   * be called when an element should update based on some state not triggered
-   * by setting a property. In this case, pass no arguments. It should also be
-   * called when manually implementing a property setter. In this case, pass the
-   * property `name` and `oldValue` to ensure that any configured property
-   * options are honored. Returns the `updateComplete` Promise which is resolved
-   * when the update completes.
-   *
-   * @param name {PropertyKey} (optional) name of requesting property
-   * @param oldValue {any} (optional) old value of requesting property
-   * @returns {Promise} A Promise that is resolved when the update completes.
-   */
-  requestUpdate(e, t) {
-    return this.requestUpdateInternal(e, t), this.updateComplete;
-  }
-  /**
-   * Sets up the element to asynchronously update.
-   */
-  async _enqueueUpdate() {
-    this._updateState = this._updateState | $;
-    try {
-      await this._updatePromise;
-    } catch {
-    }
-    const e = this.performUpdate();
-    return e != null && await e, !this._hasRequestedUpdate;
-  }
-  get _hasRequestedUpdate() {
-    return this._updateState & $;
-  }
-  get hasUpdated() {
-    return this._updateState & D;
-  }
-  /**
-   * Performs an element update. Note, if an exception is thrown during the
-   * update, `firstUpdated` and `updated` will not be called.
-   *
-   * You can override this method to change the timing of updates. If this
-   * method is overridden, `super.performUpdate()` must be called.
-   *
-   * For instance, to schedule updates to occur just before the next frame:
-   *
-   * ```
-   * protected async performUpdate(): Promise<unknown> {
-   *   await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-   *   super.performUpdate();
-   * }
-   * ```
-   */
-  performUpdate() {
-    if (!this._hasRequestedUpdate)
-      return;
-    this._instanceProperties && this._applyInstanceProperties();
-    let e = !1;
-    const t = this._changedProperties;
-    try {
-      e = this.shouldUpdate(t), e ? this.update(t) : this._markUpdated();
-    } catch (s) {
-      throw e = !1, this._markUpdated(), s;
-    }
-    e && (this._updateState & D || (this._updateState = this._updateState | D, this.firstUpdated(t)), this.updated(t));
-  }
-  _markUpdated() {
-    this._changedProperties = /* @__PURE__ */ new Map(), this._updateState = this._updateState & -5;
-  }
-  /**
-   * Returns a Promise that resolves when the element has completed updating.
-   * The Promise value is a boolean that is `true` if the element completed the
-   * update without triggering another update. The Promise result is `false` if
-   * a property was set inside `updated()`. If the Promise is rejected, an
-   * exception was thrown during the update.
-   *
-   * To await additional asynchronous work, override the `_getUpdateComplete`
-   * method. For example, it is sometimes useful to await a rendered element
-   * before fulfilling this Promise. To do this, first await
-   * `super._getUpdateComplete()`, then any subsequent state.
-   *
-   * @returns {Promise} The Promise returns a boolean that indicates if the
-   * update resolved without triggering another update.
-   */
-  get updateComplete() {
-    return this._getUpdateComplete();
-  }
-  /**
-   * Override point for the `updateComplete` promise.
-   *
-   * It is not safe to override the `updateComplete` getter directly due to a
-   * limitation in TypeScript which means it is not possible to call a
-   * superclass getter (e.g. `super.updateComplete.then(...)`) when the target
-   * language is ES5 (https://github.com/microsoft/TypeScript/issues/338).
-   * This method should be overridden instead. For example:
-   *
-   *   class MyElement extends LitElement {
-   *     async _getUpdateComplete() {
-   *       await super._getUpdateComplete();
-   *       await this._myChild.updateComplete;
-   *     }
-   *   }
-   * @deprecated Override `getUpdateComplete()` instead for forward
-   *     compatibility with `lit-element` 3.0 / `@lit/reactive-element`.
-   */
-  _getUpdateComplete() {
-    return this.getUpdateComplete();
-  }
-  /**
-   * Override point for the `updateComplete` promise.
-   *
-   * It is not safe to override the `updateComplete` getter directly due to a
-   * limitation in TypeScript which means it is not possible to call a
-   * superclass getter (e.g. `super.updateComplete.then(...)`) when the target
-   * language is ES5 (https://github.com/microsoft/TypeScript/issues/338).
-   * This method should be overridden instead. For example:
-   *
-   *   class MyElement extends LitElement {
-   *     async getUpdateComplete() {
-   *       await super.getUpdateComplete();
-   *       await this._myChild.updateComplete;
-   *     }
-   *   }
-   */
-  getUpdateComplete() {
-    return this._updatePromise;
-  }
-  /**
-   * Controls whether or not `update` should be called when the element requests
-   * an update. By default, this method always returns `true`, but this can be
-   * customized to control when to update.
-   *
-   * @param _changedProperties Map of changed properties with old values
-   */
-  shouldUpdate(e) {
-    return !0;
-  }
-  /**
-   * Updates the element. This method reflects property values to attributes.
-   * It can be overridden to render and keep updated element DOM.
-   * Setting properties inside this method will *not* trigger
-   * another update.
-   *
-   * @param _changedProperties Map of changed properties with old values
-   */
-  update(e) {
-    this._reflectingProperties !== void 0 && this._reflectingProperties.size > 0 && (this._reflectingProperties.forEach((t, s) => this._propertyToAttribute(s, this[s], t)), this._reflectingProperties = void 0), this._markUpdated();
-  }
-  /**
-   * Invoked whenever the element is updated. Implement to perform
-   * post-updating tasks via DOM APIs, for example, focusing an element.
-   *
-   * Setting properties inside this method will trigger the element to update
-   * again after this update cycle completes.
-   *
-   * @param _changedProperties Map of changed properties with old values
-   */
-  updated(e) {
-  }
-  /**
-   * Invoked when the element is first updated. Implement to perform one time
-   * work on the element after update.
-   *
-   * Setting properties inside this method will trigger the element to update
-   * again after this update cycle completes.
-   *
-   * @param _changedProperties Map of changed properties with old values
-   */
-  firstUpdated(e) {
-  }
-}
-pe = _;
-de[pe] = !0;
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-const Re = (n, e) => e.kind === "method" && e.descriptor && !("value" in e.descriptor) ? Object.assign(Object.assign({}, e), { finisher(t) {
-  t.createProperty(e.key, n);
-} }) : {
-  kind: "field",
-  key: Symbol(),
-  placement: "own",
-  descriptor: {},
-  // When @babel/plugin-proposal-decorators implements initializers,
-  // do this instead of the initializer below. See:
-  // https://github.com/babel/babel/issues/9260 extras: [
-  //   {
-  //     kind: 'initializer',
-  //     placement: 'own',
-  //     initializer: descriptor.initializer,
-  //   }
-  // ],
-  initializer() {
-    typeof e.initializer == "function" && (this[e.key] = e.initializer.call(this));
-  },
-  finisher(t) {
-    t.createProperty(e.key, n);
-  }
-}, Fe = (n, e, t) => {
-  e.constructor.createProperty(t, n);
-};
-function Z(n) {
-  return (e, t) => t !== void 0 ? Fe(n, e, t) : Re(n, e);
-}
-/**
-@license
-Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at
-http://polymer.github.io/LICENSE.txt The complete set of authors may be found at
-http://polymer.github.io/AUTHORS.txt The complete set of contributors may be
-found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
-part of the polymer project is also subject to an additional IP rights grant
-found at http://polymer.github.io/PATENTS.txt
-*/
-const k = window.ShadowRoot && (window.ShadyCSS === void 0 || window.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, fe = Symbol();
-class Ge {
-  constructor(e, t) {
-    if (t !== fe)
-      throw new Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
-    this.cssText = e;
-  }
-  // Note, this is a getter so that it's lazy. In practice, this means
-  // stylesheets are not created until the first element instance is made.
-  get styleSheet() {
-    return this._styleSheet === void 0 && (k ? (this._styleSheet = new CSSStyleSheet(), this._styleSheet.replaceSync(this.cssText)) : this._styleSheet = null), this._styleSheet;
-  }
-  toString() {
-    return this.cssText;
-  }
-}
-const we = (n) => new Ge(String(n), fe);
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-(window.litElementVersions || (window.litElementVersions = [])).push("2.5.1");
-const te = {};
-class O extends de {
-  /**
-   * Return the array of styles to apply to the element.
-   * Override this method to integrate into a style management system.
-   *
-   * @nocollapse
-   */
-  static getStyles() {
-    return this.styles;
-  }
-  /** @nocollapse */
-  static _getUniqueStyles() {
-    if (this.hasOwnProperty(JSCompiler_renameProperty("_styles", this)))
-      return;
-    const e = this.getStyles();
-    if (Array.isArray(e)) {
-      const t = (i, u) => i.reduceRight((x, o) => (
-        // Note: On IE set.add() does not return the set
-        Array.isArray(o) ? t(o, x) : (x.add(o), x)
-      ), u), s = t(e, /* @__PURE__ */ new Set()), a = [];
-      s.forEach((i) => a.unshift(i)), this._styles = a;
-    } else
-      this._styles = e === void 0 ? [] : [e];
-    this._styles = this._styles.map((t) => {
-      if (t instanceof CSSStyleSheet && !k) {
-        const s = Array.prototype.slice.call(t.cssRules).reduce((a, i) => a + i.cssText, "");
-        return we(s);
-      }
-      return t;
-    });
-  }
-  /**
-   * Performs element initialization. By default this calls
-   * [[`createRenderRoot`]] to create the element [[`renderRoot`]] node and
-   * captures any pre-set values for registered properties.
-   */
-  initialize() {
-    super.initialize(), this.constructor._getUniqueStyles(), this.renderRoot = this.createRenderRoot(), window.ShadowRoot && this.renderRoot instanceof window.ShadowRoot && this.adoptStyles();
-  }
-  /**
-   * Returns the node into which the element should render and by default
-   * creates and returns an open shadowRoot. Implement to customize where the
-   * element's DOM is rendered. For example, to render into the element's
-   * childNodes, return `this`.
-   * @returns {Element|DocumentFragment} Returns a node into which to render.
-   */
-  createRenderRoot() {
-    return this.attachShadow(this.constructor.shadowRootOptions);
-  }
-  /**
-   * Applies styling to the element shadowRoot using the [[`styles`]]
-   * property. Styling will apply using `shadowRoot.adoptedStyleSheets` where
-   * available and will fallback otherwise. When Shadow DOM is polyfilled,
-   * ShadyCSS scopes styles and adds them to the document. When Shadow DOM
-   * is available but `adoptedStyleSheets` is not, styles are appended to the
-   * end of the `shadowRoot` to [mimic spec
-   * behavior](https://wicg.github.io/construct-stylesheets/#using-constructed-stylesheets).
-   */
-  adoptStyles() {
-    const e = this.constructor._styles;
-    e.length !== 0 && (window.ShadyCSS !== void 0 && !window.ShadyCSS.nativeShadow ? window.ShadyCSS.ScopingShim.prepareAdoptedCssText(e.map((t) => t.cssText), this.localName) : k ? this.renderRoot.adoptedStyleSheets = e.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet) : this._needsShimAdoptedStyleSheets = !0);
-  }
-  connectedCallback() {
-    super.connectedCallback(), this.hasUpdated && window.ShadyCSS !== void 0 && window.ShadyCSS.styleElement(this);
-  }
-  /**
-   * Updates the element. This method reflects property values to attributes
-   * and calls `render` to render DOM via lit-html. Setting properties inside
-   * this method will *not* trigger another update.
-   * @param _changedProperties Map of changed properties with old values
-   */
-  update(e) {
-    const t = this.render();
-    super.update(e), t !== te && this.constructor.render(t, this.renderRoot, { scopeName: this.localName, eventContext: this }), this._needsShimAdoptedStyleSheets && (this._needsShimAdoptedStyleSheets = !1, this.constructor._styles.forEach((s) => {
-      const a = document.createElement("style");
-      a.textContent = s.cssText, this.renderRoot.appendChild(a);
-    }));
-  }
-  /**
-   * Invoked on each update to perform rendering tasks. This method may return
-   * any value renderable by lit-html's `NodePart` - typically a
-   * `TemplateResult`. Setting properties inside this method will *not* trigger
-   * the element to update.
-   */
-  render() {
-    return te;
-  }
-}
-O.finalized = !0;
-O.render = De;
-O.shadowRootOptions = { mode: "open" };
-const Me = 1e3 * 60, ne = "langChanged";
-function Ve(n, e, t) {
-  return Object.entries(B(e || {})).reduce((s, [a, i]) => s.replace(new RegExp(`{{[  ]*${a}[  ]*}}`, "gm"), String(B(i))), n);
-}
-function _e(n, e) {
-  const t = n.split(".");
-  let s = e.strings;
-  for (; s != null && t.length > 0; )
-    s = s[t.shift()];
-  return s != null ? s.toString() : null;
-}
-function B(n) {
-  return typeof n == "function" ? n() : n;
-}
-const ke = () => ({
-  loader: () => Promise.resolve({}),
-  empty: (n) => `[${n}]`,
-  lookup: _e,
-  interpolate: Ve,
-  translationCache: {}
-});
-let Be = ke();
-function Ue(n, e) {
-  const t = (s) => n(s.detail);
-  return window.addEventListener(ne, t, e), () => window.removeEventListener(ne, t);
-}
-function v(n, e, t = Be) {
-  let s = t.translationCache[n] || (t.translationCache[n] = t.lookup(n, t) || t.empty(n, t));
-  return e = e != null ? B(e) : null, e != null ? t.interpolate(s, e, t) : s;
-}
-function ye(n) {
-  return n instanceof L ? n.startNode.isConnected : n instanceof Ne ? n.committer.element.isConnected : n.element.isConnected;
-}
-function ze(n) {
-  for (const [e] of n)
-    ye(e) || n.delete(e);
-}
-function Ze(n) {
-  "requestIdleCallback" in window ? window.requestIdleCallback(n) : setTimeout(n);
-}
-function We(n, e) {
-  setInterval(() => Ze(() => ze(n)), e);
-}
-const be = /* @__PURE__ */ new Map();
-function He() {
-  Ue((n) => {
-    for (const [e, t] of be)
-      ye(e) && Ke(e, t, n);
-  });
-}
-He();
-We(be, Me);
-function Ke(n, e, t) {
-  const s = e(t);
-  n.value !== s && (n.setValue(s), n.commit());
-}
-function R(n, e) {
+function l(e, t) {
   return new CustomEvent("log", {
     bubbles: !0,
     composed: !0,
-    ...e,
-    detail: { ...n, ...e?.detail }
+    ...t,
+    detail: { ...e, ...t?.detail }
   });
 }
-function se(n, e) {
+function T(e, t) {
   return new CustomEvent("issue", {
     bubbles: !0,
     composed: !0,
-    ...e,
-    detail: { ...n, ...e?.detail }
+    ...t,
+    detail: { ...e, ...t?.detail }
   });
 }
-function Ye(n) {
-  return typeof n != "string" && n.file !== void 0 && n.valid === void 0 && n.loaded === void 0;
+function k(e) {
+  return typeof e != "string" && e.file !== void 0 && e.valid === void 0 && e.loaded === void 0;
 }
-function ae(n) {
-  return typeof n != "string" && n.file !== void 0 && n.valid !== void 0 && n.loaded === void 0;
+function q(e) {
+  return typeof e != "string" && e.file !== void 0 && e.valid !== void 0 && e.loaded === void 0;
 }
-function Xe(n) {
-  return typeof n != "string" && n.file !== void 0 && n.valid === void 0 && n.loaded !== void 0;
+function B(e) {
+  return typeof e != "string" && e.file !== void 0 && e.valid === void 0 && e.loaded !== void 0;
 }
-function Qe(n, e, t) {
-  const s = je[n + e + t];
-  return $e[s ?? "2007B"];
+function z(e, t, n) {
+  const s = U[e + t + n];
+  return Z[s ?? "2007B"];
 }
-const je = {
+const U = {
   "": "2003",
   2007: "2007B",
   "2007A": "2007B",
@@ -1257,7 +164,7 @@ const je = {
   "2007B2": "2007B4",
   "2007B3": "2007B4",
   "2007B4": "2007B4"
-}, $e = {
+}, Z = {
   2003: `<?xml version="1.0" encoding="UTF-8"?>
   <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
       targetNamespace="http://www.iec.ch/61850/2003/SCL" version="1.7"
@@ -10524,92 +9431,92 @@ const je = {
   </xs:schema>
   `
 };
-var Je = Object.defineProperty, W = (n, e, t, s) => {
-  for (var a = void 0, i = n.length - 1, u; i >= 0; i--)
-    (u = n[i]) && (a = u(e, t, a) || a);
-  return a && Je(e, t, a), a;
+var W = Object.defineProperty, f = (e, t, n, s) => {
+  for (var a = void 0, i = e.length - 1, u; i >= 0; i--)
+    (u = e[i]) && (a = u(t, n, a) || a);
+  return a && W(t, n, a), a;
 };
-const F = {};
-class H extends O {
-  async getValidator(e, t) {
-    if (!window.Worker) throw new Error(v("validator.schema.fatal"));
-    if (F[t]) return F[t];
+const r = {};
+class y extends N {
+  async getValidator(t, n) {
+    if (!window.Worker) throw new Error(m("validator.schema.fatal"));
+    if (r[n]) return r[n];
     const s = new Worker("public/js/worker.js");
     async function a(i, u) {
       return new Promise((x) => {
         s.addEventListener("message", (o) => {
-          ae(o.data) && o.data.file === u && x(o.data);
+          q(o.data) && o.data.file === u && x(o.data);
         }), s.postMessage({ content: i, name: u });
       });
     }
-    return F[t] = a, new Promise((i, u) => {
+    return r[n] = a, new Promise((i, u) => {
       s.addEventListener("message", (x) => {
-        if (Xe(x.data))
-          x.data.loaded ? i(a) : u(v("validator.schema.loadEror", { name: x.data.file }));
-        else if (Ye(x.data)) {
-          const o = x.data.message.split(": ", 2), l = o[1] ? o[1] : o[0], r = o[1] ? " (" + o[0] + ")" : "";
+        if (B(x.data))
+          x.data.loaded ? i(a) : u(m("validator.schema.loadEror", { name: x.data.file }));
+        else if (k(x.data)) {
+          const o = x.data.message.split(": ", 2), h = o[1] ? o[1] : o[0], S = o[1] ? " (" + o[0] + ")" : "";
           this.dispatchEvent(
-            se({
-              title: l,
+            T({
+              title: h,
               validatorId: this.pluginId,
-              message: x.data.file + ":" + x.data.line + " " + x.data.node + " " + x.data.part + r
+              message: x.data.file + ":" + x.data.line + " " + x.data.node + " " + x.data.part + S
             })
           );
-        } else ae(x.data) || this.dispatchEvent(
-          R({
-            title: v("validator.schema.fatal"),
+        } else q(x.data) || this.dispatchEvent(
+          l({
+            title: m("validator.schema.fatal"),
             kind: "error",
             message: x.data
           })
         );
-      }), s.postMessage({ content: e, name: t });
+      }), s.postMessage({ content: t, name: n });
     });
   }
   async validate() {
-    const e = this.docName;
-    let t = "2007", s = "B", a = "1";
-    this.doc.documentElement && ([t, s, a] = [
+    const t = this.docName;
+    let n = "2007", s = "B", a = "1";
+    this.doc.documentElement && ([n, s, a] = [
       this.doc.documentElement.getAttribute("version") ?? "",
       this.doc.documentElement.getAttribute("revision") ?? "",
       this.doc.documentElement.getAttribute("release") ?? ""
     ]);
     const i = await this.getValidator(
-      Qe(t, s, a),
-      "SCL" + t + s + a + ".xsd"
+      z(n, s, a),
+      "SCL" + n + s + a + ".xsd"
     ).then(
-      (u) => u(new XMLSerializer().serializeToString(this.doc), e)
+      (u) => u(new XMLSerializer().serializeToString(this.doc), t)
     );
     if (!i.valid) {
       this.dispatchEvent(
-        R({
+        l({
           kind: "warning",
-          title: v("validator.schema.invalid", { name: i.file })
+          title: m("validator.schema.invalid", { name: i.file })
         })
       );
       return;
     }
     this.dispatchEvent(
-      R({
+      l({
         kind: "info",
-        title: v("validator.schema.valid", { name: i.file })
+        title: m("validator.schema.valid", { name: i.file })
       })
     ), this.dispatchEvent(
-      se({
+      T({
         validatorId: this.pluginId,
-        title: v("validator.schema.valid", { name: i.file })
+        title: m("validator.schema.valid", { name: i.file })
       })
     );
   }
 }
-W([
-  Z()
-], H.prototype, "doc");
-W([
-  Z()
-], H.prototype, "docName");
-W([
-  Z()
-], H.prototype, "pluginId");
+f([
+  c()
+], y.prototype, "doc");
+f([
+  c()
+], y.prototype, "docName");
+f([
+  c()
+], y.prototype, "pluginId");
 export {
-  H as default
+  y as default
 };
