@@ -137,13 +137,13 @@ window.trustedTypes && trustedTypes.createPolicy("lit-html", { createHTML: (i) =
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-const ze = (i) => i === null || !(typeof i == "object" || typeof i == "function");
+const Fe = (i) => i === null || !(typeof i == "object" || typeof i == "function");
 class L {
   constructor(e) {
     this.value = void 0, this.committer = e;
   }
   setValue(e) {
-    e !== H && (!ze(e) || e !== this.value) && (this.value = e, J(e) || (this.committer.dirty = !0));
+    e !== H && (!Fe(e) || e !== this.value) && (this.value = e, J(e) || (this.committer.dirty = !0));
   }
   commit() {
     for (; J(this.value); ) {
@@ -155,12 +155,12 @@ class L {
 }
 class se extends L {
 }
-let Fe = !1;
+let ze = !1;
 (() => {
   try {
     const i = {
       get capture() {
-        return Fe = !0, !1;
+        return ze = !0, !1;
       }
     };
     window.addEventListener("test", i, i), window.removeEventListener("test", i, i);
@@ -218,7 +218,7 @@ function n(i, e, t, r) {
   else for (var d = i.length - 1; d >= 0; d--) (o = i[d]) && (a = (c < 3 ? o(a) : c > 3 ? o(e, t, a) : o(e, t)) || a);
   return c > 3 && a && Object.defineProperty(e, t, a), a;
 }
-function F(i) {
+function z(i) {
   var e = typeof Symbol == "function" && Symbol.iterator, t = e && i[e], r = 0;
   if (t) return t.call(i);
   if (i && typeof i.length == "number") return {
@@ -398,8 +398,8 @@ function Oe(i, e, t) {
     return { x: 0, y: 0 };
   var r = e.x, c = e.y, a = r + t.left, o = c + t.top, d, f;
   if (i.type === "touchstart") {
-    var z = i;
-    d = z.changedTouches[0].pageX - a, f = z.changedTouches[0].pageY - o;
+    var F = i;
+    d = F.changedTouches[0].pageX - a, f = F.changedTouches[0].pageY - o;
   } else {
     var S = i;
     d = S.pageX - a, f = S.pageY - o;
@@ -577,7 +577,7 @@ var Y = [
       var r, c;
       if (t) {
         try {
-          for (var a = F(Y), o = a.next(); !o.done; o = a.next()) {
+          for (var a = z(Y), o = a.next(); !o.done; o = a.next()) {
             var d = o.value;
             this.adapter.registerInteractionHandler(d, this.activateHandler);
           }
@@ -599,7 +599,7 @@ var Y = [
         this.adapter.registerInteractionHandler("keyup", this.deactivateHandler);
       else
         try {
-          for (var a = F(ee), o = a.next(); !o.done; o = a.next()) {
+          for (var a = z(ee), o = a.next(); !o.done; o = a.next()) {
             var d = o.value;
             this.adapter.registerDocumentInteractionHandler(d, this.deactivateHandler);
           }
@@ -615,7 +615,7 @@ var Y = [
     }, e.prototype.deregisterRootHandlers = function() {
       var t, r;
       try {
-        for (var c = F(Y), a = c.next(); !a.done; a = c.next()) {
+        for (var c = z(Y), a = c.next(); !a.done; a = c.next()) {
           var o = a.value;
           this.adapter.deregisterInteractionHandler(o, this.activateHandler);
         }
@@ -633,7 +633,7 @@ var Y = [
       var t, r;
       this.adapter.deregisterInteractionHandler("keyup", this.deactivateHandler);
       try {
-        for (var c = F(ee), a = c.next(); !a.done; a = c.next()) {
+        for (var c = z(ee), a = c.next(); !a.done; a = c.next()) {
           var o = a.value;
           this.adapter.deregisterDocumentInteractionHandler(o, this.deactivateHandler);
         }
@@ -675,7 +675,7 @@ var Y = [
     }, e.prototype.checkElementMadeActive = function(t) {
       return t !== void 0 && t.type === "keydown" ? this.adapter.isSurfaceActive() : !0;
     }, e.prototype.animateActivation = function() {
-      var t = this, r = e.strings, c = r.VAR_FG_TRANSLATE_START, a = r.VAR_FG_TRANSLATE_END, o = e.cssClasses, d = o.FG_DEACTIVATION, f = o.FG_ACTIVATION, z = e.numbers.DEACTIVATION_TIMEOUT_MS;
+      var t = this, r = e.strings, c = r.VAR_FG_TRANSLATE_START, a = r.VAR_FG_TRANSLATE_END, o = e.cssClasses, d = o.FG_DEACTIVATION, f = o.FG_ACTIVATION, F = e.numbers.DEACTIVATION_TIMEOUT_MS;
       this.layoutInternal();
       var S = "", q = "";
       if (!this.adapter.isUnbounded()) {
@@ -684,7 +684,7 @@ var Y = [
       }
       this.adapter.updateCssVariable(c, S), this.adapter.updateCssVariable(a, q), clearTimeout(this.activationTimer), clearTimeout(this.fgDeactivationRemovalTimer), this.rmBoundedActivationClasses(), this.adapter.removeClass(d), this.adapter.computeBoundingRect(), this.adapter.addClass(f), this.activationTimer = setTimeout(function() {
         t.activationTimerCallback();
-      }, z);
+      }, F);
     }, e.prototype.getFgTranslationCoordinates = function() {
       var t = this.activationState, r = t.activationEvent, c = t.wasActivatedByPointer, a;
       c ? a = Oe(r, this.adapter.getWindowPageOffset(), this.adapter.computeBoundingRect()) : a = {

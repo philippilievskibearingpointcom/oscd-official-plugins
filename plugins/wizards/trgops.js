@@ -32,7 +32,7 @@ function Se(i, e) {
   const t = (r) => i(r.detail);
   return window.addEventListener(J, t, e), () => window.removeEventListener(J, t);
 }
-function F(i, e, t = we) {
+function z(i, e, t = we) {
   let r = t.translationCache[i] || (t.translationCache[i] = t.lookup(i, t) || t.empty(i, t));
   return e = e != null ? P(e) : null, e != null ? t.interpolate(r, e, t) : r;
 }
@@ -50,13 +50,13 @@ function Re(i, e) {
   setInterval(() => Ae(() => Ce(i)), e);
 }
 const I = /* @__PURE__ */ new Map();
-function ze() {
+function Fe() {
   Se((i) => {
     for (const [e, t] of I)
       oe(e) && ne(e, t, i);
   });
 }
-ze();
+Fe();
 Re(I, ye);
 function ne(i, e, t) {
   const r = e(t);
@@ -137,13 +137,13 @@ window.trustedTypes && trustedTypes.createPolicy("lit-html", { createHTML: (i) =
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-const Fe = (i) => i === null || !(typeof i == "object" || typeof i == "function");
+const ze = (i) => i === null || !(typeof i == "object" || typeof i == "function");
 class H {
   constructor(e) {
     this.value = void 0, this.committer = e;
   }
   setValue(e) {
-    e !== $ && (!Fe(e) || e !== this.value) && (this.value = e, Q(e) || (this.committer.dirty = !0));
+    e !== $ && (!ze(e) || e !== this.value) && (this.value = e, Q(e) || (this.committer.dirty = !0));
   }
   commit() {
     for (; Q(this.value); ) {
@@ -197,14 +197,14 @@ function Le(i, e) {
   }
   i.prototype = e === null ? Object.create(e) : (t.prototype = e.prototype, new t());
 }
-var z = function() {
-  return z = Object.assign || function(e) {
+var F = function() {
+  return F = Object.assign || function(e) {
     for (var t, r = 1, c = arguments.length; r < c; r++) {
       t = arguments[r];
       for (var a in t) Object.prototype.hasOwnProperty.call(t, a) && (e[a] = t[a]);
     }
     return e;
-  }, z.apply(this, arguments);
+  }, F.apply(this, arguments);
 };
 function n(i, e, t, r) {
   var c = arguments.length, a = c < 3 ? e : r === null ? r = Object.getOwnPropertyDescriptor(e, t) : r, o;
@@ -437,7 +437,7 @@ var ee = [
   function(i) {
     Le(e, i);
     function e(t) {
-      var r = i.call(this, z(z({}, e.defaultAdapter), t)) || this;
+      var r = i.call(this, F(F({}, e.defaultAdapter), t)) || this;
       return r.activationAnimationHasEnded = !1, r.activationTimer = 0, r.fgDeactivationRemovalTimer = 0, r.fgScale = "0", r.frame = { width: 0, height: 0 }, r.initialSize = 0, r.layoutFrame = 0, r.maxRadius = 0, r.unboundedCoords = { left: 0, top: 0 }, r.activationState = r.defaultActivationState(), r.activationTimerCallback = function() {
         r.activationAnimationHasEnded = !0, r.runDeactivationUXLogicIfReady();
       }, r.activateHandler = function(c) {
@@ -709,7 +709,7 @@ var ee = [
     }, e.prototype.deactivateImpl = function() {
       var t = this, r = this.activationState;
       if (r.isActivated) {
-        var c = z({}, r);
+        var c = F({}, r);
         r.isProgrammatic ? (requestAnimationFrame(function() {
           t.animateDeactivation(c);
         }), this.resetActivationState()) : (this.deregisterDeactivationHandlers(), requestAnimationFrame(function() {
@@ -1783,7 +1783,7 @@ let v = class extends ve {
     await super.firstUpdated(), this.multiplierMenu && (this.multiplierMenu.anchor = this.multiplierButton ?? null);
   }
   checkValidity() {
-    return this.reservedValues && this.reservedValues.some((i) => i === this.value) ? (this.setCustomValidity(F("textfield.unique")), !1) : (this.setCustomValidity(""), super.checkValidity());
+    return this.reservedValues && this.reservedValues.some((i) => i === this.value) ? (this.setCustomValidity(z("textfield.unique")), !1) : (this.setCustomValidity(""), super.checkValidity());
   }
   renderUnitSelector() {
     return this.multipliers.length && this.unit ? l`<div style="position:relative;">
@@ -1804,7 +1804,7 @@ let v = class extends ve {
   renderMulplierList() {
     return l`${this.multipliers.map(
       (i) => l`<mwc-list-item ?selected=${i === this.multiplier}
-          >${i === null ? F("textfield.noMultiplier") : i}</mwc-list-item
+          >${i === null ? z("textfield.noMultiplier") : i}</mwc-list-item
         >`
     )}`;
   }
@@ -1999,7 +1999,7 @@ function At(i) {
         label="${e}"
         .maybeValue=${t}
         nullable
-        helper="${F(`scl.${e}`)}"
+        helper="${z(`scl.${e}`)}"
       ></wizard-checkbox>`
   );
 }
@@ -2028,10 +2028,10 @@ function Gt(i) {
   ].map((o) => i.getAttribute(o));
   return [
     {
-      title: F("wizard.title.edit", { tagName: i.tagName }),
+      title: z("wizard.title.edit", { tagName: i.tagName }),
       primary: {
         icon: "save",
-        label: F("save"),
+        label: z("save"),
         action: Rt(i)
       },
       content: At({ dchg: e, qchg: t, dupd: r, period: c, gi: a })
